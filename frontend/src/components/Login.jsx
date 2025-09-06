@@ -1,15 +1,40 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { href, Link } from 'react-router-dom'
 import { useForm } from "react-hook-form"
-
+import axios from 'axios' 
+import { toast } from 'react-hot-toast'
 const Login = () => {
     const {
-    register,
+    register,   
     handleSubmit,
     formState: { errors },
   } = useForm()
 
-  const onSubmit = (data) => console.log(data)
+  const onSubmit = async(data) => {
+      const userInfo = {
+        email: data.email,
+        password: data.password,
+      }
+      await axios.post("http://localhost:3000/users/login", userInfo)
+      .then((res) => {
+        console.log(res.data);
+        if (res && res.data ) {
+          toast.success("Login Successful");
+          document.getElementById('my_modal_3').close();
+          setTimeout(() => {
+            localStorage.setItem("User", JSON.stringify(res.data));
+            window.location.reload();
+          }, 2000)
+        } 
+      })
+      .catch((err) => {
+        console.log(err.response);
+        if(err.response){
+           localStorage.removeItem("User");
+          toast.error(err.response.data.message)
+        }
+      });
+   }  
   return (
     <>
     {/* You can open the modal using document.getElementById('ID').showModal() method */}
@@ -18,7 +43,13 @@ const Login = () => {
   <div className="modal-box">
     <form  onSubmit={handleSubmit(onSubmit)} method="dialog">
       {/* if there is a button in form, it will close the modal */}
-      <Link to="/" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</Link>
+      {/* <Link to="/" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</Link> */}
+      <button 
+    type="button" 
+    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" 
+    onClick={() => { document.getElementById('my_modal_3').close(); window.location.href = '/'; }}>
+    ✕
+</button>
     
     <h3 className="font-bold text-lg">Login</h3>
     <div className='mt-4 space-y-2'>
